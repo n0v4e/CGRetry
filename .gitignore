@@ -1,0 +1,10 @@
+.vs/
+*.user
+*.suo
+*.db
+[Bb]in/
+[Oo]bj/
+lib/
+*.dll
+.DS_Store
+Thumbs.db
