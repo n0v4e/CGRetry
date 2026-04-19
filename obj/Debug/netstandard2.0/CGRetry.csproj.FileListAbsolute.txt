@@ -1,0 +1,5 @@
+C:\Users\ironp\Desktop\CGRetry\obj\Debug\netstandard2.0\CGRetry.csproj.AssemblyReference.cache
+C:\Users\ironp\Desktop\CGRetry\obj\Debug\netstandard2.0\CGRetry.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ironp\Desktop\CGRetry\obj\Debug\netstandard2.0\CGRetry.AssemblyInfoInputs.cache
+C:\Users\ironp\Desktop\CGRetry\obj\Debug\netstandard2.0\CGRetry.AssemblyInfo.cs
+C:\Users\ironp\Desktop\CGRetry\obj\Debug\netstandard2.0\CGRetry.csproj.CoreCompileInputs.cache
