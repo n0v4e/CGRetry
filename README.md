@@ -12,3 +12,6 @@ You can retry a wave either:
 
 # Configuration
 You can tweak values such as the **startup time** and **start rank** for retried waves to better fit your needs.
+
+# Note
+The source code is a huge monolith of shit. Don't stare at it for too long until I fix it ***someday™***.
