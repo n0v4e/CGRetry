@@ -52,6 +52,7 @@ namespace CGR {
             public static FieldInfo FinalCyberRank_complete_field = AccessTools.Field(typeof(FinalCyberRank), "complete");
             public static FieldInfo FinalCyberRank_i_field = AccessTools.Field(typeof(FinalCyberRank), "i");
             public static FieldInfo FinalCyberRank_gameOver_field = AccessTools.Field(typeof(FinalCyberRank), "gameOver");
+            public static FieldInfo FinalCyberRank_wasPaused_field = AccessTools.Field(typeof(FinalCyberRank), "wasPaused");
             public static MethodInfo FinalCyberRank_GameOver_method = AccessTools.Method(typeof(FinalCyberRank), "GameOver");
             public static MethodInfo FinalCyberRank_Appear_method = AccessTools.Method(typeof(FinalCyberRank), "Appear");
 
@@ -79,6 +80,8 @@ namespace CGR {
             public static MethodInfo StyleHUD_AscendRank_method = AccessTools.Method(typeof(StyleHUD), "AscendRank");
 
             public static FieldInfo OptionsManager_pauseMenu_field = AccessTools.Field(typeof(OptionsManager), "pauseMenu");
+
+            public static FieldInfo ShotgunHammer_launchPlayer_field = AccessTools.Field(typeof(ShotgunHammer), "launchPlayer");
         }
 
         class RNG {
@@ -97,9 +100,7 @@ namespace CGR {
             }
         }
 
-        class UIManager
-        {
-            static GameObject pauseMenuDialogs;
+        class DialogManager {
             public static GameObject pauseMenu;
             static GameObject quitDialog;
             public static GameObject gameOverDialog;
@@ -113,8 +114,8 @@ namespace CGR {
                 if (pauseMenu == null) return;
 
                 Transform canvas = pauseMenu.transform.parent;
-                for (int i = 0; i < canvas.childCount; ++i)
-                {
+                GameObject pauseMenuDialogs = null;
+                for (int i = 0; i < canvas.childCount; ++i) {
                     GameObject child = canvas.GetChild(i).gameObject;
                     if (child.name == "PauseMenuDialogs") pauseMenuDialogs = child;
                 }
@@ -129,13 +130,11 @@ namespace CGR {
                 gameOverDialog = CloneDialog("Game Over Confirm", "<color=green>RETRY</color>", "NO", "Do you want to\n<color=green>RETRY</color> this wave?",
                     () => {
                         RetryWave();
-                        SetMouse(false);
+                        SetMouseVisibility(false);
                     },
                     () =>
                     {
                         hasRefusedRetryOnDeath = true;
-                        SetMouse(false);
-
                         FinalCyberRank finalCyberRank = FindObjectOfType<FinalCyberRank>();
                         finalCyberRank.StopAllCoroutines();
                         Legacy.FinalCyberRank_Appear_method.Invoke(finalCyberRank, null);
@@ -144,12 +143,13 @@ namespace CGR {
 
             public static void ShowDialog(GameObject dialog)
             {
-                SetMouse(true);
-                pauseMenuDialogs.transform.Find("Blocker").gameObject.SetActive(true);
-                dialog.SetActive(true);
+                SetMouseVisibility(true);
+                dialog.GetComponent<BasicConfirmationDialog>().ShowDialog();
+                //pauseMenuDialogs.transform.Find("Blocker").gameObject.SetActive(true);
+                //dialog.SetActive(true);
             }
 
-            static void SetMouse(bool show)
+            static void SetMouseVisibility(bool show)
             {
                 Cursor.visible = show;
                 Cursor.lockState = show ? CursorLockMode.None : CursorLockMode.Locked;
@@ -175,7 +175,7 @@ namespace CGR {
                     dialog.transform.parent.Find("Blocker").gameObject.SetActive(false);
                     OptionsManager.Instance.UnPause();
                     dialog.SetActive(false);
-                    SetMouse(false);
+                    SetMouseVisibility(false);
                 });
                 confirmButton.onClick.AddListener(confirmEvent);
                 TextMeshProUGUI confirmButtonText = confirmButton.transform.Find("Text").GetComponent<TextMeshProUGUI>();
@@ -217,7 +217,15 @@ namespace CGR {
         static void ResetGame() {
             hasRefusedRetryOnDeath = false;
 
+            GameObject currentWeapon = GunControl.Instance.currentWeapon;
+            if (currentWeapon != null) { ShotgunHammer jackHammer = currentWeapon.GetComponent<ShotgunHammer>();
+                if (jackHammer != null) {
+                    Legacy.ShotgunHammer_launchPlayer_field.SetValue(jackHammer, false);
+                }
+            }
+
             // cybergrind
+            Legacy.EndlessGrid_incompleteBlocks_field.SetValue(EndlessGrid.Instance, 999);
             ActivateNextWave anw = (ActivateNextWave)Legacy.EndlessGrid_anw_field.GetValue(EndlessGrid.Instance);
             anw.deadEnemies = 0;
             Legacy.EndlessGrid_anw_field.SetValue(EndlessGrid.Instance, anw);
@@ -231,7 +239,7 @@ namespace CGR {
                 NewMovement.Instance.ridingRocket = null;
             }
             NewMovement.Instance.StopSlide();
-            if (NewMovement.Instance.dead) NewMovement.Instance.Respawn();
+            NewMovement.Instance.Respawn();
             NewMovement.Instance.rb.position = new Vector3(0.01f, 100f, 62.5f);
             NewMovement.Instance.rb.velocity = Vector3.zero;
 
@@ -268,8 +276,6 @@ namespace CGR {
 
             // time
             TimeController.Instance.controlTimeScale = true;
-            TimeController.Instance.timeScale = 1f;
-            Time.timeScale = TimeController.Instance.timeScale * TimeController.Instance.timeScaleModifier;
 
             // map
             DestroyAll<Projectile>();
@@ -277,20 +283,16 @@ namespace CGR {
             DestroyAll<GroundWave>();
             DestroyAll<Magnet>();
             DestroyAll<VirtueInsignia>();
+            DestroyAll<Pincer>();
             List<GameObject> enemies = (List<GameObject>)Legacy.EndlessGrid_spawnedEnemies_field.GetValue(EndlessGrid.Instance);
             for (int i = enemies.Count - 1; i >= 0; i--)
                 if (enemies[i] != null) Destroy(enemies[i]);
             enemies.Clear();
 
             // audio
-            AudioMixerController.Instance.forceOff = false;
-            AudioMixerController.Instance.allSound.SetFloat("allPitch", 1f);
-            AudioMixerController.Instance.musicSound.SetFloat("allPitch", 1f);
+            Legacy.FinalCyberRank_wasPaused_field.SetValue(finalCyberRank, false);
             AudioMixerController.Instance.allSound.SetFloat("allVolume", AudioMixerController.Instance.CalculateVolume(AudioMixerController.Instance.sfxVolume));
             AudioMixerController.Instance.musicSound.SetFloat("allVolume", AudioMixerController.Instance.CalculateVolume(AudioMixerController.Instance.musicVolume));
-            MusicManager.Instance.forcedOff = false;
-            MusicManager.Instance.volume = 1f;
-            MusicManager.Instance.StartMusic();
 
             GameObject[] rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
             foreach (GameObject gameobject in rootObjects)
@@ -443,7 +445,7 @@ namespace CGR {
                 if (!hasRefusedRetryOnDeath && hasCbStarted) {
                     __instance.StopAllCoroutines();
                     __instance.StartCoroutine(WaitAndCall(1f, () => {
-                        UIManager.ShowDialog(UIManager.gameOverDialog);
+                        DialogManager.ShowDialog(DialogManager.gameOverDialog);
                     }));
                 }
                 return true;
@@ -469,11 +471,11 @@ namespace CGR {
             [HarmonyPostfix]
             [HarmonyPatch("Start")]
             static void StartPostfix() {
-                UIManager.Initialize();
+                DialogManager.Initialize();
 
-                if (UIManager.pauseMenu == null) return;
+                if (DialogManager.pauseMenu == null) return;
 
-                Button templateButton = UIManager.pauseMenu.GetComponentInChildren<Button>(true);
+                Button templateButton = DialogManager.pauseMenu.GetComponentInChildren<Button>(true);
                 buttonObject = Instantiate(templateButton.gameObject, templateButton.transform.parent);
                 buttonObject.name = "CGRetryWave Button";
                 Button buttonComponent = buttonObject.GetComponent<Button>();
@@ -487,7 +489,7 @@ namespace CGR {
                         RetryWave();
                     }
                     else {
-                        UIManager.ShowDialog(UIManager.retryDialog);
+                        DialogManager.ShowDialog(DialogManager.retryDialog);
                     }
                 });
                 RectTransform rect = buttonObject.GetComponent<RectTransform>();
@@ -536,6 +538,16 @@ namespace CGR {
             static void StartPrefix() {
                 hasCbStarted = false;
                 hasRefusedRetryOnDeath = false;
+            }
+        }
+
+        [HarmonyPatch(typeof(BasicConfirmationDialog))]
+        class BasicConfirmationDialogPatch {
+            [HarmonyPrefix]
+            [HarmonyPatch("Update")]
+            static bool UpdatePrefix(BasicConfirmationDialog __instance) {
+                if (__instance.gameObject.name == "Game Over Confirm") return false;
+                return true;
             }
         }
     }
