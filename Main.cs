@@ -42,48 +42,6 @@ namespace CGR {
             }
         }
 
-        static class Legacy {
-            public static FieldInfo FinalCyberRank_countTime_field = AccessTools.Field(typeof(FinalCyberRank), "countTime");
-            public static FieldInfo FinalCyberRank_countWaves_field = AccessTools.Field(typeof(FinalCyberRank), "countWaves");
-            public static FieldInfo FinalCyberRank_countKills_field = AccessTools.Field(typeof(FinalCyberRank), "countKills");
-            public static FieldInfo FinalCyberRank_countStyle_field = AccessTools.Field(typeof(FinalCyberRank), "countStyle");
-            public static FieldInfo FinalCyberRank_friendContainer_field = AccessTools.Field(typeof(FinalCyberRank), "friendContainer");
-            public static FieldInfo FinalCyberRank_globalContainer_field = AccessTools.Field(typeof(FinalCyberRank), "globalContainer");
-            public static FieldInfo FinalCyberRank_complete_field = AccessTools.Field(typeof(FinalCyberRank), "complete");
-            public static FieldInfo FinalCyberRank_i_field = AccessTools.Field(typeof(FinalCyberRank), "i");
-            public static FieldInfo FinalCyberRank_gameOver_field = AccessTools.Field(typeof(FinalCyberRank), "gameOver");
-            public static FieldInfo FinalCyberRank_wasPaused_field = AccessTools.Field(typeof(FinalCyberRank), "wasPaused");
-            public static MethodInfo FinalCyberRank_GameOver_method = AccessTools.Method(typeof(FinalCyberRank), "GameOver");
-            public static MethodInfo FinalCyberRank_Appear_method = AccessTools.Method(typeof(FinalCyberRank), "Appear");
-
-            public static FieldInfo EndlessGrid_anw_field = AccessTools.Field(typeof(EndlessGrid), "anw");
-            public static FieldInfo EndlessGrid_patterns_field = AccessTools.Field(typeof(EndlessGrid), "patterns");
-            public static FieldInfo EndlessGrid_customPatterns_field = AccessTools.Field(typeof(EndlessGrid), "customPatterns");
-            public static FieldInfo EndlessGrid_spawnedEnemies_field = AccessTools.Field(typeof(EndlessGrid), "spawnedEnemies");
-            public static FieldInfo EndlessGrid_specialAntiBuffer_field = AccessTools.Field(typeof(EndlessGrid), "specialAntiBuffer");
-            public static FieldInfo EndlessGrid_uncommonAntiBuffer_field = AccessTools.Field(typeof(EndlessGrid), "uncommonAntiBuffer");
-            public static FieldInfo EndlessGrid_massAntiBuffer_field = AccessTools.Field(typeof(EndlessGrid), "massAntiBuffer");
-            public static FieldInfo EndlessGrid_currentPatternNum_field = AccessTools.Field(typeof(EndlessGrid), "currentPatternNum");
-            public static FieldInfo EndlessGrid_points_field = AccessTools.Field(typeof(EndlessGrid), "points");
-            public static FieldInfo EndlessGrid_maxPoints_field = AccessTools.Field(typeof(EndlessGrid), "maxPoints");
-            public static MethodInfo EndlessGrid_NextWave_method = AccessTools.Method(typeof(EndlessGrid), "NextWave");
-            public static FieldInfo EndlessGrid_incompletePrefabs_field = AccessTools.Field(typeof(EndlessGrid), "incompletePrefabs");
-            public static FieldInfo EndlessGrid_incompleteBlocks_field = AccessTools.Field(typeof(EndlessGrid), "incompleteBlocks");
-            public static FieldInfo EndlessGrid_meleePositions_field = AccessTools.Field(typeof(EndlessGrid), "meleePositions");
-            public static FieldInfo EndlessGrid_usedMeleePositions_field = AccessTools.Field(typeof(EndlessGrid), "usedMeleePositions");
-            public static FieldInfo EndlessGrid_projectilePositions_field = AccessTools.Field(typeof(EndlessGrid), "projectilePositions");
-            public static FieldInfo EndlessGrid_usedProjectilePositions_field = AccessTools.Field(typeof(EndlessGrid), "usedProjectilePositions");
-            public static FieldInfo EndlessGrid_hideousMasses_field = AccessTools.Field(typeof(EndlessGrid), "hideousMasses");
-
-            public static PropertyInfo StyleHUD_rankIndex_property = AccessTools.Property(typeof(StyleHUD), "rankIndex");
-            public static FieldInfo StyleHUD_currentMeter_field = AccessTools.Field(typeof(StyleHUD), "currentMeter");
-            public static MethodInfo StyleHUD_AscendRank_method = AccessTools.Method(typeof(StyleHUD), "AscendRank");
-
-            public static FieldInfo OptionsManager_pauseMenu_field = AccessTools.Field(typeof(OptionsManager), "pauseMenu");
-
-            public static FieldInfo ShotgunHammer_launchPlayer_field = AccessTools.Field(typeof(ShotgunHammer), "launchPlayer");
-        }
-
         class RNG {
             static System.Random rng = new System.Random();
 
@@ -109,9 +67,8 @@ namespace CGR {
             public static void Initialize()
             {
                 if (EndlessGrid.Instance == null) return;
-
-                pauseMenu = (GameObject)Legacy.OptionsManager_pauseMenu_field.GetValue(OptionsManager.Instance);
-                if (pauseMenu == null) return;
+                pauseMenu = OptionsManager.Instance.pauseMenu;
+                if (OptionsManager.Instance.pauseMenu == null) return;
 
                 Transform canvas = pauseMenu.transform.parent;
                 GameObject pauseMenuDialogs = null;
@@ -137,26 +94,21 @@ namespace CGR {
                         hasRefusedRetryOnDeath = true;
                         FinalCyberRank finalCyberRank = FindObjectOfType<FinalCyberRank>();
                         finalCyberRank.StopAllCoroutines();
-                        Legacy.FinalCyberRank_Appear_method.Invoke(finalCyberRank, null);
+                        finalCyberRank.Appear();
                     });
             }
 
-            public static void ShowDialog(GameObject dialog)
-            {
+            public static void ShowDialog(GameObject dialog) {
                 SetMouseVisibility(true);
                 dialog.GetComponent<BasicConfirmationDialog>().ShowDialog();
-                //pauseMenuDialogs.transform.Find("Blocker").gameObject.SetActive(true);
-                //dialog.SetActive(true);
             }
 
-            static void SetMouseVisibility(bool show)
-            {
+            static void SetMouseVisibility(bool show) {
                 Cursor.visible = show;
                 Cursor.lockState = show ? CursorLockMode.None : CursorLockMode.Locked;
             }
 
-            public static GameObject CloneDialog(string name, string confirmText, string cancelText, string text, UnityEngine.Events.UnityAction confirmEvent, UnityEngine.Events.UnityAction cancelEvent)
-            {
+            public static GameObject CloneDialog(string name, string confirmText, string cancelText, string text, UnityEngine.Events.UnityAction confirmEvent, UnityEngine.Events.UnityAction cancelEvent) {
                 GameObject dialog = Instantiate(quitDialog, quitDialog.transform.parent);
                 dialog.name = name;
                 Transform panel = dialog.transform.Find("Panel");
@@ -185,7 +137,6 @@ namespace CGR {
                 retryDialogText.text = text;
 
                 panel.Find("Text (1)").gameObject.GetComponent<TextMeshProUGUI>().gameObject.SetActive(false);
-
                 return dialog;
             }
         }
@@ -211,24 +162,21 @@ namespace CGR {
             CheatsController.Instance.ActivateCheats();
             ResetGame();
             isRetrying = true;
-            Legacy.EndlessGrid_NextWave_method.Invoke(EndlessGrid.Instance, null);
+            EndlessGrid.Instance.NextWave();
         }
 
         static void ResetGame() {
             hasRefusedRetryOnDeath = false;
 
             GameObject currentWeapon = GunControl.Instance.currentWeapon;
-            if (currentWeapon != null) { ShotgunHammer jackHammer = currentWeapon.GetComponent<ShotgunHammer>();
-                if (jackHammer != null) {
-                    Legacy.ShotgunHammer_launchPlayer_field.SetValue(jackHammer, false);
-                }
+            if (currentWeapon != null) {
+                ShotgunHammer jackHammer = currentWeapon.GetComponent<ShotgunHammer>();
+                if (jackHammer != null) jackHammer.launchPlayer = false;
             }
 
             // cybergrind
-            Legacy.EndlessGrid_incompleteBlocks_field.SetValue(EndlessGrid.Instance, 999);
-            ActivateNextWave anw = (ActivateNextWave)Legacy.EndlessGrid_anw_field.GetValue(EndlessGrid.Instance);
-            anw.deadEnemies = 0;
-            Legacy.EndlessGrid_anw_field.SetValue(EndlessGrid.Instance, anw);
+            EndlessGrid.Instance.incompleteBlocks = 999;
+            EndlessGrid.Instance.anw.deadEnemies = 0;
             EndlessGrid.Instance.CancelInvoke();
 
             // player
@@ -245,9 +193,9 @@ namespace CGR {
 
             // style
             StyleHUD.Instance.ResetAllFreshness();
-            Legacy.StyleHUD_rankIndex_property.SetValue(StyleHUD.Instance, ConfigManager.retryStartRank.Value);
-            Legacy.StyleHUD_currentMeter_field.SetValue(StyleHUD.Instance, StyleHUD.Instance.currentRank.maxMeter - 0.01f);
-            Legacy.StyleHUD_AscendRank_method.Invoke(StyleHUD.Instance, null);
+            StyleHUD.Instance.rankIndex = ConfigManager.retryStartRank.Value;
+            StyleHUD.Instance.currentMeter = StyleHUD.Instance.currentRank.maxMeter - 0.01f;
+            StyleHUD.Instance.AscendRank();
 
             // camera
             CameraController.Instance.activated = true;
@@ -261,17 +209,16 @@ namespace CGR {
 
             // ui
             FinalCyberRank finalCyberRank = FindObjectOfType<FinalCyberRank>();
-            Legacy.FinalCyberRank_gameOver_field.SetValue(finalCyberRank, false);
-            Legacy.FinalCyberRank_i_field.SetValue(finalCyberRank, 0);
-            ((GameObject)Legacy.FinalCyberRank_friendContainer_field.GetValue(finalCyberRank))
-                .transform.parent.gameObject.transform.parent.gameObject.transform.parent.gameObject.SetActive(false);
-            ((GameObject)Legacy.FinalCyberRank_globalContainer_field.GetValue(finalCyberRank)).transform.parent.gameObject.SetActive(false);
+            finalCyberRank.gameOver = false;
+            finalCyberRank.i = 0;
+            finalCyberRank.friendContainer.transform.parent.gameObject.transform.parent.gameObject.transform.parent.gameObject.SetActive(false);
+            finalCyberRank.globalContainer.transform.parent.gameObject.SetActive(false);
             foreach (GameObject gameobject in finalCyberRank.toAppear) gameobject.SetActive(false);
-            Legacy.FinalCyberRank_complete_field.SetValue(finalCyberRank, false);
-            Legacy.FinalCyberRank_countTime_field.SetValue(finalCyberRank, false);
-            Legacy.FinalCyberRank_countWaves_field.SetValue(finalCyberRank, false);
-            Legacy.FinalCyberRank_countKills_field.SetValue(finalCyberRank, false);
-            Legacy.FinalCyberRank_countStyle_field.SetValue(finalCyberRank, false);
+            finalCyberRank.complete = false;
+            finalCyberRank.countTime = false;
+            finalCyberRank.countWaves = false;
+            finalCyberRank.countKills = false;
+            finalCyberRank.countStyle = false;
             finalCyberRank.StopAllCoroutines();
 
             // time
@@ -284,13 +231,16 @@ namespace CGR {
             DestroyAll<Magnet>();
             DestroyAll<VirtueInsignia>();
             DestroyAll<Pincer>();
-            List<GameObject> enemies = (List<GameObject>)Legacy.EndlessGrid_spawnedEnemies_field.GetValue(EndlessGrid.Instance);
+            // destroy shockwaves
+            // destroy goopclouds
+
+            List<GameObject> enemies = EndlessGrid.Instance.spawnedEnemies;
             for (int i = enemies.Count - 1; i >= 0; i--)
                 if (enemies[i] != null) Destroy(enemies[i]);
             enemies.Clear();
 
             // audio
-            Legacy.FinalCyberRank_wasPaused_field.SetValue(finalCyberRank, false);
+            finalCyberRank.wasPaused = false;
             AudioMixerController.Instance.allSound.SetFloat("allVolume", AudioMixerController.Instance.CalculateVolume(AudioMixerController.Instance.sfxVolume));
             AudioMixerController.Instance.musicSound.SetFloat("allVolume", AudioMixerController.Instance.CalculateVolume(AudioMixerController.Instance.musicVolume));
 
@@ -323,44 +273,42 @@ namespace CGR {
                 seed = UnityEngine.Random.Range(0, int.MaxValue);
                 RNG.SetSeed(seed);
                 currentWave = grid.currentWave;
-                points = (int)Legacy.EndlessGrid_points_field.GetValue(grid);
-                maxPoints = (int)Legacy.EndlessGrid_maxPoints_field.GetValue(grid);
-                specialAntiBuffer = (int)Legacy.EndlessGrid_specialAntiBuffer_field.GetValue(grid);
-                massAntiBuffer = (int)Legacy.EndlessGrid_massAntiBuffer_field.GetValue(grid);
-                uncommonAntiBuffer = (float)Legacy.EndlessGrid_uncommonAntiBuffer_field.GetValue(grid);
-                currentPatternNum = (int)Legacy.EndlessGrid_currentPatternNum_field.GetValue(grid);
-                patterns = (ArenaPattern[])((ArenaPattern[])Legacy.EndlessGrid_patterns_field.GetValue(grid)).Clone();
-                customPatterns = (ArenaPattern[])((ArenaPattern[])Legacy.EndlessGrid_customPatterns_field.GetValue(grid)).Clone();
-
-                incompleteBlocks = (int)Legacy.EndlessGrid_incompleteBlocks_field.GetValue(grid);
-                usedMeleePositions = (int)Legacy.EndlessGrid_usedMeleePositions_field.GetValue(grid);
-                usedProjectilePositions = (int)Legacy.EndlessGrid_usedProjectilePositions_field.GetValue(grid);
-                incompletePrefabs = (int)Legacy.EndlessGrid_incompletePrefabs_field.GetValue(grid);
-                hideousMasses = (int)Legacy.EndlessGrid_hideousMasses_field.GetValue(grid);
-                meleePositions = new List<Vector2>((List<Vector2>)Legacy.EndlessGrid_meleePositions_field.GetValue(grid));
-                projectilePositions = new List<Vector2>((List<Vector2>)Legacy.EndlessGrid_projectilePositions_field.GetValue(grid));
+                points = EndlessGrid.Instance.points;
+                maxPoints = EndlessGrid.Instance.maxPoints;
+                specialAntiBuffer = EndlessGrid.Instance.specialAntiBuffer;
+                massAntiBuffer = EndlessGrid.Instance.massAntiBuffer;
+                uncommonAntiBuffer = EndlessGrid.Instance.uncommonAntiBuffer;
+                currentPatternNum = EndlessGrid.Instance.currentPatternNum;
+                patterns = (ArenaPattern[])EndlessGrid.Instance.patterns.Clone();
+                customPatterns = (ArenaPattern[])EndlessGrid.Instance.customPatterns.Clone();
+                incompleteBlocks = EndlessGrid.Instance.incompleteBlocks;
+                usedMeleePositions = EndlessGrid.Instance.usedMeleePositions;
+                usedProjectilePositions = EndlessGrid.Instance.usedProjectilePositions;
+                incompletePrefabs = EndlessGrid.Instance.incompletePrefabs;
+                hideousMasses = EndlessGrid.Instance.hideousMasses;
+                meleePositions = new List<Vector2>(EndlessGrid.Instance.meleePositions);
+                projectilePositions = new List<Vector2>(EndlessGrid.Instance.projectilePositions);
             }
 
             public void Load(EndlessGrid grid) {
                 Logger.LogInfo("Loaded EndlessGrid state");
                 RNG.SetSeed(seed);
                 grid.currentWave = currentWave;
-                Legacy.EndlessGrid_points_field.SetValue(grid, points);
-                Legacy.EndlessGrid_maxPoints_field.SetValue(grid, maxPoints);
-                Legacy.EndlessGrid_specialAntiBuffer_field.SetValue(grid, specialAntiBuffer);
-                Legacy.EndlessGrid_massAntiBuffer_field.SetValue(grid, massAntiBuffer);
-                Legacy.EndlessGrid_uncommonAntiBuffer_field.SetValue(grid, uncommonAntiBuffer);
-                Legacy.EndlessGrid_currentPatternNum_field.SetValue(grid, currentPatternNum);
-                Legacy.EndlessGrid_patterns_field.SetValue(grid, patterns.Clone());
-                Legacy.EndlessGrid_customPatterns_field.SetValue(grid, customPatterns.Clone());
-
-                Legacy.EndlessGrid_incompleteBlocks_field.SetValue(grid, incompleteBlocks);
-                Legacy.EndlessGrid_usedMeleePositions_field.SetValue(grid, usedMeleePositions);
-                Legacy.EndlessGrid_usedProjectilePositions_field.SetValue(grid, usedProjectilePositions);
-                Legacy.EndlessGrid_incompletePrefabs_field.SetValue(grid, incompletePrefabs);
-                Legacy.EndlessGrid_hideousMasses_field.SetValue(grid, hideousMasses);
-                Legacy.EndlessGrid_meleePositions_field.SetValue(grid, new List<Vector2>(meleePositions));
-                Legacy.EndlessGrid_projectilePositions_field.SetValue(grid, new List<Vector2>(projectilePositions));
+                EndlessGrid.Instance.points = points;
+                EndlessGrid.Instance.maxPoints= maxPoints;
+                EndlessGrid.Instance.specialAntiBuffer =  specialAntiBuffer;
+                EndlessGrid.Instance.massAntiBuffer = massAntiBuffer;
+                EndlessGrid.Instance.uncommonAntiBuffer = uncommonAntiBuffer;
+                EndlessGrid.Instance.currentPatternNum = currentPatternNum;
+                EndlessGrid.Instance.patterns = (ArenaPattern[])patterns.Clone();
+                EndlessGrid.Instance.customPatterns = (ArenaPattern[])customPatterns.Clone();
+                EndlessGrid.Instance.incompleteBlocks = incompleteBlocks;
+                EndlessGrid.Instance.usedMeleePositions = usedMeleePositions;
+                EndlessGrid.Instance.usedProjectilePositions = usedProjectilePositions;
+                EndlessGrid.Instance.incompletePrefabs = incompletePrefabs;
+                EndlessGrid.Instance.hideousMasses = hideousMasses;
+                EndlessGrid.Instance.meleePositions = new List<Vector2>(meleePositions);
+                EndlessGrid.Instance.projectilePositions = new List<Vector2>(projectilePositions);
             }
         }
 
@@ -403,7 +351,7 @@ namespace CGR {
                 EndlessGrid.Instance.StartCoroutine(WaitAndCall(ConfigManager.retryStartupTime.Value , () => {
                     endlessGridState.Load(EndlessGrid.Instance);
                     isStartup = true;
-                    Legacy.EndlessGrid_NextWave_method.Invoke(EndlessGrid.Instance, null);
+                    EndlessGrid.Instance.NextWave();
                 }));
                 return false;
             }
@@ -483,8 +431,7 @@ namespace CGR {
                 buttonComponent.onClick.AddListener(() =>
                 {
                     FinalCyberRank finalCyberRank = FindObjectOfType<FinalCyberRank>();
-                    bool gameOver = (bool)Legacy.FinalCyberRank_gameOver_field.GetValue(finalCyberRank);
-                    if (CheatsController.Instance.cheatsEnabled || gameOver) {
+                    if (CheatsController.Instance.cheatsEnabled || finalCyberRank.gameOver) {
                         OptionsManager.Instance.UnPause();
                         RetryWave();
                     }
@@ -501,14 +448,11 @@ namespace CGR {
             static void PausePostfix() {
                 if (EndlessGrid.Instance == null) return;
 
-                int incompleteBlocks = (int)Legacy.EndlessGrid_incompleteBlocks_field.GetValue(EndlessGrid.Instance);
-                int incompletePrefabs = (int)Legacy.EndlessGrid_incompletePrefabs_field.GetValue(EndlessGrid.Instance);
-
                 if (buttonObject) {
                     buttonObject.SetActive(hasCbStarted);
                     TextMeshProUGUI textComponent = buttonObject.GetComponentInChildren<TextMeshProUGUI>(true);
                     Button buttonComponent = buttonObject.GetComponent<Button>();
-                    if (incompleteBlocks == 0 && incompletePrefabs == 0) {
+                    if (EndlessGrid.Instance.incompleteBlocks == 0 && EndlessGrid.Instance.incompletePrefabs == 0) {
                         textComponent.text = "<color=green>RETRY WAVE</color>";
                         buttonComponent.enabled = true;
                     }
@@ -518,10 +462,8 @@ namespace CGR {
                     }
                 }
 
-                GameObject pauseMenu = (GameObject)Legacy.OptionsManager_pauseMenu_field.GetValue(OptionsManager.Instance);
-                if (pauseMenu == null) return;
-
-                Button[] buttons = pauseMenu.GetComponentsInChildren<Button>();
+                if (OptionsManager.Instance.pauseMenu == null) return;
+                Button[] buttons = OptionsManager.Instance.pauseMenu.GetComponentsInChildren<Button>();
                 foreach (Button button in buttons) {
                     TextMeshProUGUI textComponent = button.GetComponentInChildren<TextMeshProUGUI>(true);
                     if (textComponent != null && textComponent.text.ToUpper() == "CHECKPOINT") {

@@ -1,5 +1,7 @@
 # CGRetry
-An ULTRAKILL mod that allows you to **retry the current wave mid-game or upon death** in the **Cyber Grind**. Useful for **training** on difficult waves.
+An ULTRAKILL mod that allows you to **deterministically retry the current wave mid-game or upon death** in the **Cyber Grind**.
+It restores the wave's starting state in such a way that the same enemies spawn every time.
+Useful for **training** on difficult waves!
 
 # Usage
 You can retry a wave either:
